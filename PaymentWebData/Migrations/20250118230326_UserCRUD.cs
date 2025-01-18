@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace PaymentWebData.Migrations
 {
     /// <inheritdoc />
-    public partial class Test : Migration
+    public partial class UserCRUD : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -58,7 +58,8 @@ namespace PaymentWebData.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     TotalBalance = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     AvailableBalance = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Data = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreateDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdateDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -180,7 +181,8 @@ namespace PaymentWebData.Migrations
                     FullName = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     BalanceId = table.Column<int>(type: "int", nullable: true),
-                    Data = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreateDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdateDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -189,7 +191,8 @@ namespace PaymentWebData.Migrations
                         name: "FK_Users_Balances_BalanceId",
                         column: x => x.BalanceId,
                         principalTable: "Balances",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -200,7 +203,8 @@ namespace PaymentWebData.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    Data = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreateDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdateDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {

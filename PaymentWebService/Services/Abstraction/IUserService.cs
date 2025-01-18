@@ -1,4 +1,5 @@
-﻿using PaymentWebEntity.DTOs;
+﻿using Microsoft.EntityFrameworkCore;
+using PaymentWebEntity.DTOs;
 using PaymentWebEntity.Entities;
 
 namespace PaymentWebService.Services.Abstraction
@@ -7,7 +8,8 @@ namespace PaymentWebService.Services.Abstraction
     {
         Task<UserDetailsDto> GetUserByIdAsync(int? Id);
 
-        IEnumerable<User> GetAll();
+        IEnumerable<UserDto> GetAll();
+
         Task AddUserAsync(UserCreateDto userDto);
 
         Task DeleteUserAsync(int? Id);

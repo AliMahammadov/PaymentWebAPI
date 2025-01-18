@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PaymentWebEntity.Entities;
+using System.Reflection.Emit;
 
 namespace PaymentWebData.DAL
 {
@@ -20,13 +21,16 @@ namespace PaymentWebData.DAL
             builder.Entity<User>()
                 .HasOne(u => u.Balance)
                 .WithMany(b => b.Users)
-                .HasForeignKey(u => u.BalanceId); 
-
+                .HasForeignKey(u => u.BalanceId)
+            .OnDelete(DeleteBehavior.SetNull);
 
             builder.Entity<Payment>()
                 .HasOne(p => p.User)  
                 .WithMany(u => u.Payments) 
-                .HasForeignKey(p => p.UserId);
+                .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+            base.OnModelCreating(builder);
         }
 
 

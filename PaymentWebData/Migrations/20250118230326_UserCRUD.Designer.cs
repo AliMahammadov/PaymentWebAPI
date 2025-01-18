@@ -12,8 +12,8 @@ using PaymentWebData.DAL;
 namespace PaymentWebData.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250114203951_Test")]
-    partial class Test
+    [Migration("20250118230326_UserCRUD")]
+    partial class UserCRUD
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -234,11 +234,14 @@ namespace PaymentWebData.Migrations
                     b.Property<decimal>("AvailableBalance")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("Data")
+                    b.Property<DateTime?>("CreateDate")
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("TotalBalance")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -256,7 +259,10 @@ namespace PaymentWebData.Migrations
                     b.Property<decimal?>("Amount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("Data")
+                    b.Property<DateTime?>("CreateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("UserId")
@@ -280,7 +286,7 @@ namespace PaymentWebData.Migrations
                     b.Property<int?>("BalanceId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("Data")
+                    b.Property<DateTime?>("CreateDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
@@ -291,6 +297,9 @@ namespace PaymentWebData.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -365,7 +374,8 @@ namespace PaymentWebData.Migrations
                 {
                     b.HasOne("PaymentWebEntity.Entities.Balance", "Balance")
                         .WithMany("Users")
-                        .HasForeignKey("BalanceId");
+                        .HasForeignKey("BalanceId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Balance");
                 });

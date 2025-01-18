@@ -18,8 +18,7 @@ namespace PaymentWebService.Services.Concrete
         {
             var user = await _context.Users
                .Where(u => u.Id == Id)
-               .Include(u => u.Balance)   // Balance ilə əlaqəni daxil et.
-               .Include(u => u.Payments)  // Payments ilə əlaqəni daxil et
+               .Include(u => u.Balance)   
                .FirstOrDefaultAsync();
 
             if (user == null)
@@ -27,57 +26,45 @@ namespace PaymentWebService.Services.Concrete
                 return null; 
             }
 
-            // UserDetailsDto yaratmaq və məlumatları qaytarmaq
             var userDetails = new UserDetailsDto
             {
                 FullName = user.FullName,
                 Email = user.Email,
+                CreateDate = user.CreateDate,
+                UpdateDate = user.UpdateDate,
                 TotalBalance = user.Balance.TotalBalance,
                 Payments = user.Payments.Select(p => new PaymentDto
                 {
                     Amount = p.Amount,
                 }).ToList()
+
             };
             return userDetails;
-            //if (!Id.HasValue) throw new ArgumentNullException(nameof(Id));
-            //var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == Id);
-            //if (user == null) throw new KeyNotFoundException("User not Found");
-            //return user;
         }
 
         public async Task AddUserAsync(UserCreateDto userDto)
         {
-            // Yeni Balance obyekti yaratmaq
             Balance balance = new Balance()
             {
-                TotalBalance = 0, // Default olaraq 0
+                TotalBalance = 0,
                 AvailableBalance = 0,
+                CreateDate = DateTime.UtcNow
                 
             };
 
-            // Balance-i əlavə et
             await _context.Balances.AddAsync(balance);
-            await _context.SaveChangesAsync();  // SaveChanges burada çağırılmalı ki, balance.Id yaradılıb saxlanılsın.
+            await _context.SaveChangesAsync();
 
-            // Yeni User obyekti yaratmaq
             User user = new User()
             {
                 FullName = userDto.FullName,
                 Email = userDto.Email,
                 BalanceId = balance.Id,
-                Data = DateTime.UtcNow
+                CreateDate = DateTime.UtcNow,
             };
 
-            // User-i əlavə et
             await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();  // User-in ID-si burada bazada yaradılır
-
-            // Balance modelindəki əlaqəni yenidən saxlayırıq, indi UserId təyin edirik
-
-            //User.UserId = user.Id;
-
-            // Balance obyektini yenidən saxlayırıq
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();  
         }
 
 
@@ -102,19 +89,43 @@ namespace PaymentWebService.Services.Concrete
             if (User == null)
                 throw new KeyNotFoundException("User not found");
 
-            // Update user properties
             User.FullName = user.FullName;
             User.Email = user.Email;
+            User.UpdateDate = DateTime.UtcNow;
 
             _context.Users.Update(User);
             await _context.SaveChangesAsync();
 
         }
 
-        IEnumerable<User> IUserService.GetAll()
-        {
+      public IEnumerable<UserDto> GetAll()
+{
+    var users = _context.Set<User>()
+                  .Include(u => u.Balance)  // Balance əlaqəsini yüklə
+                  .Include(u => u.Payments) // Payment əlaqəsini yüklə
+                  .ToList();
 
-            return _context.Users.ToList();
-        }
+    var formattedData = users.Select(user => new UserDto
+    {
+        CreateDate = user.CreateDate,
+        UpdateDate = user.UpdateDate,
+        FullName = user.FullName,
+        Email = user.Email,
+   
+       
+        Balance = new BalanceDto
+        {
+            TotalBalance = user.Balance.TotalBalance,
+            AvailableBalance = user.Balance.AvailableBalance
+        },
+        Payments = user.Payments.Select(payment => new PaymentDto
+        {
+            Amount = payment.Amount,
+        }).ToList()
+    }).ToList();
+
+    return formattedData;
+}
+
     }
 }

@@ -7,17 +7,20 @@ using System.Threading.Tasks;
 
 namespace PaymentWebEntity.DTOs
 {
-    public class UserDetailsDto:BaseEntity
+    public class UserDto:BaseEntity
     {
         public string FullName { get; set; }
         public string Email { get; set; }
-        public decimal TotalBalance { get; set; }
-        public List<PaymentDto>? Payments { get; set; }
+        public BalanceDto Balance { get; set; }
+        public List<PaymentDto> Payments { get; set; }
     }
 
-    public class PaymentDto:BaseEntity
+    public class BalanceDto
     {
-        public decimal? Amount { get; set; }
-        public int UserId { get; set; }
+        public decimal TotalBalance { get; set; }
+        public decimal AvailableBalance { get; set; }
     }
+
+    
+
 }

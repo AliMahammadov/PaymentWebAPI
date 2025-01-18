@@ -1,4 +1,6 @@
-﻿namespace PaymentWebEntity.DTOs
+﻿using PaymentWebCore.Entities;
+
+namespace PaymentWebEntity.DTOs
 {
     public class UserCreateDto
     {

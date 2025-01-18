@@ -18,9 +18,10 @@ namespace PaymentWebAPI.Controllers
 
 
         [HttpGet("get-all")]
-        public IEnumerable<User> GetAllUsers()
+        public IActionResult GetAllUsers()
         {
-           return _userService.GetAll();
+            var users = _userService.GetAll();
+            return Ok(users);
         }
 
 
