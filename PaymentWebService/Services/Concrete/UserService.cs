@@ -3,15 +3,18 @@ using PaymentWebData.DAL;
 using PaymentWebEntity.Entities;
 using PaymentWebService.Services.Abstraction;
 using PaymentWebEntity.DTOs;
+using PaymentWebEntity.DTOs.LoginRegister;
 namespace PaymentWebService.Services.Concrete
 {
     public class UserService : IUserService
     {
         private readonly AppDbContext _context;
+        private readonly TokenService _tokenService;
 
-        public UserService(AppDbContext context)
+        public UserService(AppDbContext context, TokenService tokenService)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            _tokenService = tokenService;
         }
 
         public async Task<UserDto> GetUserByIdAsync(int? Id)
@@ -63,6 +66,7 @@ namespace PaymentWebService.Services.Concrete
             {
                 PhoneNumber = userDto.PhoneNumber,
                 Email = userDto.Email,
+                Password = userDto.Password,
                 BalanceId = balance.Id,
                 CreateDate = DateTime.UtcNow,
             };
@@ -132,5 +136,51 @@ namespace PaymentWebService.Services.Concrete
     return formattedData;
 }
 
+        public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
+        {
+            if (await _context.Users.AnyAsync(u => u.Email == registerDto.Email))
+                throw new InvalidOperationException("Email already exists.");
+
+            var balance = new Balance
+            {
+                TotalBalance = 0,
+                AvailableBalance = 0,
+                CreateDate = DateTime.UtcNow
+            };
+            await _context.Balances.AddAsync(balance);
+            await _context.SaveChangesAsync();
+
+            var user = new User
+            {
+                Email = registerDto.Email,
+                PhoneNumber = registerDto.PhoneNumber,
+                Password = registerDto.Password,
+                BalanceId = balance.Id,
+                CreateDate = DateTime.UtcNow
+            };
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+
+            return new AuthResponseDto
+            {
+                Token = _tokenService.GenerateToken(user),
+                Email = user.Email
+            };
+        }
+
+        public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
+            if (user == null)
+                throw new KeyNotFoundException("User not found.");
+
+            // Şifrələmə yoxlama əlavə edilə bilər.
+
+            return new AuthResponseDto
+            {
+                Token = _tokenService.GenerateToken(user),
+                Email = user.Email
+            };
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PaymentWebEntity.DTOs;
+using PaymentWebEntity.DTOs.LoginRegister;
 using PaymentWebEntity.Entities;
 
 namespace PaymentWebService.Services.Abstraction
@@ -15,5 +16,9 @@ namespace PaymentWebService.Services.Abstraction
         Task DeleteUserAsync(int? Id);
         
         Task UpdateUserByIdAsync(int? id,UserUpdateDto user);
+
+
+        Task<AuthResponseDto> LoginAsync(LoginDto loginDto);
+        Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto);
     }
 }

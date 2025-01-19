@@ -12,8 +12,8 @@ using PaymentWebData.DAL;
 namespace PaymentWebData.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250119094443_BalanceCRUD")]
-    partial class BalanceCRUD
+    [Migration("20250119130933_CreateAuth")]
+    partial class CreateAuth
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -296,6 +296,10 @@ namespace PaymentWebData.Migrations
                     b.Property<string>("FullName")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
