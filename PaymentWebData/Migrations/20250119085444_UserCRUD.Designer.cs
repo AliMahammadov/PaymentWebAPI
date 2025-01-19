@@ -12,7 +12,7 @@ using PaymentWebData.DAL;
 namespace PaymentWebData.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250118230326_UserCRUD")]
+    [Migration("20250119085444_UserCRUD")]
     partial class UserCRUD
     {
         /// <inheritdoc />
@@ -294,9 +294,12 @@ namespace PaymentWebData.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FullName")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");

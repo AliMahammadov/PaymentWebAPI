@@ -6,13 +6,16 @@ namespace PaymentWebEntity.Entities
 {
     public class User : BaseEntity
     {
-        [Required]
+      
         [MaxLength(20)]
-        public string FullName { get; set; }
+        public string? FullName { get; set; }
 
         [Required]
         [EmailAddress]
         public string Email { get; set; }
+
+        [Required]
+        public string PhoneNumber { get; set; }
 
         public int? BalanceId { get; set; }
         public Balance Balance { get; set; } 

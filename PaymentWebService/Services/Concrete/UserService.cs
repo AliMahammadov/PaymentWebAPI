@@ -14,28 +14,32 @@ namespace PaymentWebService.Services.Concrete
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task<UserDetailsDto> GetUserByIdAsync(int? Id)
+        public async Task<UserDto> GetUserByIdAsync(int? Id)
         {
             var user = await _context.Users
                .Where(u => u.Id == Id)
-               .Include(u => u.Balance)   
+               .Include(u => u.Balance)
+               .Include(u => u.Payments)
                .FirstOrDefaultAsync();
 
-            if (user == null)
-            {
-                return null; 
-            }
-
-            var userDetails = new UserDetailsDto
+            if (user == null) return null;
+            var userDetails = new UserDto
             {
                 FullName = user.FullName,
                 Email = user.Email,
                 CreateDate = user.CreateDate,
                 UpdateDate = user.UpdateDate,
-                TotalBalance = user.Balance.TotalBalance,
+                Balance = new BalanceDto
+                {
+                    TotalBalance = user.Balance.TotalBalance,
+                    AvailableBalance = user.Balance.AvailableBalance,
+                    
+                },
+
                 Payments = user.Payments.Select(p => new PaymentDto
                 {
                     Amount = p.Amount,
+                    CreateDate = p.CreateDate
                 }).ToList()
 
             };
@@ -57,7 +61,7 @@ namespace PaymentWebService.Services.Concrete
 
             User user = new User()
             {
-                FullName = userDto.FullName,
+                PhoneNumber = userDto.PhoneNumber,
                 Email = userDto.Email,
                 BalanceId = balance.Id,
                 CreateDate = DateTime.UtcNow,
@@ -90,7 +94,6 @@ namespace PaymentWebService.Services.Concrete
                 throw new KeyNotFoundException("User not found");
 
             User.FullName = user.FullName;
-            User.Email = user.Email;
             User.UpdateDate = DateTime.UtcNow;
 
             _context.Users.Update(User);
@@ -107,6 +110,7 @@ namespace PaymentWebService.Services.Concrete
 
     var formattedData = users.Select(user => new UserDto
     {
+        Id = user.Id,
         CreateDate = user.CreateDate,
         UpdateDate = user.UpdateDate,
         FullName = user.FullName,
@@ -121,6 +125,7 @@ namespace PaymentWebService.Services.Concrete
         Payments = user.Payments.Select(payment => new PaymentDto
         {
             Amount = payment.Amount,
+            CreateDate = payment.CreateDate,
         }).ToList()
     }).ToList();
 

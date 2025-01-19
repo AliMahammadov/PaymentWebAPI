@@ -6,7 +6,7 @@ namespace PaymentWebService.Services.Abstraction
 {
     public interface IUserService
     {
-        Task<UserDetailsDto> GetUserByIdAsync(int? Id);
+        Task<UserDto> GetUserByIdAsync(int? Id);
 
         IEnumerable<UserDto> GetAll();
 
