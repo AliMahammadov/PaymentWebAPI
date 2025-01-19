@@ -12,8 +12,8 @@ using PaymentWebData.DAL;
 namespace PaymentWebData.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250119085444_UserCRUD")]
-    partial class UserCRUD
+    [Migration("20250119094443_BalanceCRUD")]
+    partial class BalanceCRUD
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

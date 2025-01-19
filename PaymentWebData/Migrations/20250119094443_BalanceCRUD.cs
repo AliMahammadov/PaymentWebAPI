@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace PaymentWebData.Migrations
 {
     /// <inheritdoc />
-    public partial class UserCRUD : Migration
+    public partial class BalanceCRUD : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

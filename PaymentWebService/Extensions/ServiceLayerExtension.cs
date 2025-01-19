@@ -10,7 +10,7 @@ namespace PaymentWebService.Extensions
         {
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IPaymentService, PaymentService>();
-            //services.AddScoped<IBalanceServices, IBalanceServices>();
+            services.AddScoped<IBalanceServices, BalanceService>();
             return services;
         }
     }
