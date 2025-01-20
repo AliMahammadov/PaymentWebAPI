@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using System.Text.RegularExpressions;  // Add this using for regex
+using System.Text.RegularExpressions;  
 using PaymentWebData.Extensions;
 using PaymentWebService.Extensions;
 using PaymentWebService.Services.Concrete;
