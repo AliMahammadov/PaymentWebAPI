@@ -173,7 +173,8 @@ namespace PaymentWebService.Services.Concrete
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
             if (user == null)
                 throw new KeyNotFoundException("User not found.");
-
+            if (user.Password != loginDto.Password)
+                throw new KeyNotFoundException("User not found.");
             // Şifrələmə yoxlama əlavə edilə bilər.
 
             return new AuthResponseDto

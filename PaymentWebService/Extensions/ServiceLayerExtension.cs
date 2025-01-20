@@ -11,6 +11,8 @@ namespace PaymentWebService.Extensions
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IBalanceServices, BalanceService>();
+            services.AddScoped<TokenService>();
+
             return services;
         }
     }
