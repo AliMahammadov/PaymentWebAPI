@@ -12,8 +12,8 @@ using PaymentWebData.DAL;
 namespace PaymentWebData.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250119130933_CreateAuth")]
-    partial class CreateAuth
+    [Migration("20250226200820_Auth")]
+    partial class Auth
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -290,7 +290,6 @@ namespace PaymentWebData.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FullName")
@@ -302,6 +301,11 @@ namespace PaymentWebData.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("RepeatPassword")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

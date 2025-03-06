@@ -1,4 +1,5 @@
 ﻿using PaymentWebCore.Entities;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
@@ -10,19 +11,21 @@ namespace PaymentWebEntity.Entities
         [MaxLength(20)]
         public string? FullName { get; set; }
 
-        [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
-
-        [Required]
+        [Required, DataType(DataType.Password)]
         public string Password { get; set; }
-        [Required]
+
+        [Required, DataType(DataType.Password), Compare("Password")]
+        public string RepeatPassword { get; set; }
+
+        [Required, Phone, MaxLength(10), MinLength(10)]
         public string PhoneNumber { get; set; }
 
         public int? BalanceId { get; set; }
         public Balance Balance { get; set; } 
 
-        public ICollection<Payment>? Payments { get; set; } = new List<Payment>();  // Boş kolleksiya ilə başlatmaq yaxşıdır
+        public ICollection<Payment>? Payments { get; set; } = new List<Payment>(); 
     }
 }

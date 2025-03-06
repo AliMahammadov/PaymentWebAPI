@@ -2,13 +2,9 @@
 using Microsoft.IdentityModel.Tokens;
 using PaymentWebEntity.Entities;
 using PaymentWebService.Services.Abstraction;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace PaymentWebService.Services.Concrete
 {
@@ -23,20 +19,23 @@ namespace PaymentWebService.Services.Concrete
 
         public string GenerateToken(User user)
         {
-            var claims = new[]
-             {
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var jwtSettings = _configuration.GetSection("Jwt");
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.MobilePhone, user.PhoneNumber),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+            };
+            var expireDays = Convert.ToInt32(jwtSettings["ExpireDays"] ?? "1");
+            var expiration = DateTime.Now.AddDays(expireDays);
+
             var token = new JwtSecurityToken(
-                _configuration["Jwt:Issuer"],
-                _configuration["Jwt:Issuer"],
+                jwtSettings["Issuer"],
+                jwtSettings["Audience"],
                 claims,
-                expires: DateTime.Now.AddDays(1),
+                expires: expiration,
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

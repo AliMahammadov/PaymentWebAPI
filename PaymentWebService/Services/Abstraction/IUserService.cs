@@ -1,7 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using PaymentWebEntity.DTOs;
+﻿using PaymentWebEntity.DTOs;
 using PaymentWebEntity.DTOs.LoginRegister;
-using PaymentWebEntity.Entities;
 
 namespace PaymentWebService.Services.Abstraction
 {

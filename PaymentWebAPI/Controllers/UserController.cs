@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PaymentWebEntity.DTOs;
-using PaymentWebEntity.Entities;
 using PaymentWebService.Services.Abstraction;
 
 namespace PaymentWebAPI.Controllers
 {
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
@@ -24,7 +24,6 @@ namespace PaymentWebAPI.Controllers
             return Ok(users);
         }
 
-
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDetailsDto>> GetUserDetails(int id)
         {
@@ -38,12 +37,12 @@ namespace PaymentWebAPI.Controllers
             return Ok(userDetails);
         }
 
-        [HttpPost("add")]
-        public async Task<IActionResult> AddUserAsync([FromBody] UserCreateDto user)
-        {
-                await _userService.AddUserAsync(user);
-                return Ok(user);
-        }
+        //[HttpPost("add (Only Admin)")]
+        //public async Task<IActionResult> AddUserAsync([FromBody] UserCreateDto user)
+        //{
+        //        await _userService.AddUserAsync(user);
+        //        return Ok(user);
+        //}
 
         [HttpPost("Delete")]
         public async Task<IActionResult> DeleteUserAsync(int id)
