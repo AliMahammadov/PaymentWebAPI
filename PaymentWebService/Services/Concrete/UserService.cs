@@ -4,6 +4,7 @@ using PaymentWebEntity.Entities;
 using PaymentWebService.Services.Abstraction;
 using PaymentWebEntity.DTOs;
 using PaymentWebEntity.DTOs.LoginRegister;
+using System.Text.RegularExpressions;
 namespace PaymentWebService.Services.Concrete
 {
     public class UserService : IUserService
@@ -75,8 +76,6 @@ namespace PaymentWebService.Services.Concrete
             await _context.SaveChangesAsync();  
         }
 
-
-
         public async Task DeleteUserAsync(int? Id)
         {
             if (!Id.HasValue) throw new ArgumentNullException(nameof(Id));
@@ -86,26 +85,74 @@ namespace PaymentWebService.Services.Concrete
             await _context.SaveChangesAsync();
         }
 
-       
-
         public async Task UpdateUserByIdAsync(int? id, UserUpdateDto user)
         {
             if (!id.HasValue)
                 throw new ArgumentNullException(nameof(id));
 
-            var User = await _context.Users.FindAsync(id.Value);
-            if (User == null)
-                throw new KeyNotFoundException("User not found");
+            var existingUser = await _context.Users.FindAsync(id.Value);
+            if (existingUser == null)
+                throw new KeyNotFoundException("Istifadeci movcud deyil");
 
-            User.FullName = user.FullName;
-            User.UpdateDate = DateTime.UtcNow;
+            if (!string.IsNullOrWhiteSpace(user.PhoneNumber) && user.PhoneNumber != "string")
+            {
+                if (user.PhoneNumber.Length != 10 || !Regex.IsMatch(user.PhoneNumber, @"^\d+$"))
+                    throw new InvalidOperationException("Telefon nömrəsini düzgün qeyd edin (Nümunə: 0706280899)");
 
-            _context.Users.Update(User);
+                if (await _context.Users.AnyAsync(u => u.PhoneNumber == user.PhoneNumber))
+                    throw new InvalidOperationException("Bu nomre artiq istifade olunub.");
+
+                existingUser.PhoneNumber = user.PhoneNumber;
+            }
+
+            if (!string.IsNullOrWhiteSpace(user.Email) && user.Email != "string")
+            {
+                if (!user.Email.Contains("@"))
+                    throw new InvalidOperationException("Email ünvanı '@' simvolu daxil olmalıdır!");
+
+                if (await _context.Users.AnyAsync(u => u.Email == user.Email))
+                    throw new InvalidOperationException("Bu Email artiq istifade olunub.");
+
+                existingUser.Email = user.Email;
+            }
+
+            if (!string.IsNullOrWhiteSpace(user.Password) && user.Password != "string")
+            {
+                if (user.Password != user.RepeatPassword)
+                    throw new InvalidOperationException("Parolu düzgün daxil edin!");
+
+                if (user.Password.Length < 5 || user.Password.Length > 8)
+                    throw new InvalidOperationException("Parolun uzunluğu 5-8 simvol arasında olmalıdır!");
+
+                if (!user.Password.Any(char.IsUpper))
+                    throw new InvalidOperationException("Parol ən az bir böyük hərf içərməlidir!");
+
+                if (!user.Password.Any(char.IsLower))
+                    throw new InvalidOperationException("Parol ən az bir kiçik hərf içərməlidir!");
+
+                existingUser.Password = user.Password;
+                existingUser.RepeatPassword = user.RepeatPassword;
+            }
+
+            if (!string.IsNullOrWhiteSpace(user.FullName) && user.FullName != "string")
+            {
+                if (user.FullName.Length < 3 || user.FullName.Length > 20)
+                    throw new InvalidOperationException("Adın uzunluğu 3-20 simvol arasında olmalıdır!");
+
+                if (user.FullName.Any(char.IsDigit))
+                    throw new InvalidOperationException("Ad daxilində rəqəm olmamalıdır!");
+
+                var textInfo = System.Globalization.CultureInfo.CurrentCulture.TextInfo;
+                existingUser.FullName = textInfo.ToTitleCase(user.FullName.ToLower());
+            }
+
+            existingUser.UpdateDate = DateTime.UtcNow;
+
+            _context.Users.Update(existingUser);
             await _context.SaveChangesAsync();
-
         }
 
-      public IEnumerable<UserDto> GetAll()
+        public IEnumerable<UserDto> GetAll()
 {
     var users = _context.Set<User>()
                   .Include(u => u.Balance)  // Balance əlaqəsini yüklə
@@ -138,8 +185,25 @@ namespace PaymentWebService.Services.Concrete
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
         {
-            if (await _context.Users.AnyAsync(u => u.Email == registerDto.Email))
-                throw new InvalidOperationException("Email already exists.");
+            if (await _context.Users.AnyAsync(u => u.PhoneNumber == registerDto.PhoneNumber))
+                throw new InvalidOperationException("Bu nomre artiq istifade olunub.");
+
+            if (registerDto.PhoneNumber.Length != 10 || !Regex.IsMatch(registerDto.PhoneNumber, @"^\d+$"))
+                throw new InvalidOperationException("Telefon nömrəsini düzgün qeyd edin (Nümunə: 0706280899)");
+            if (!(registerDto.Password == registerDto.RepeatPassword))
+
+                throw new InvalidOperationException("Parolu duzgun daxil edin!");
+            if (!(registerDto.Password == registerDto.RepeatPassword))
+                throw new InvalidOperationException("Parolu düzgün daxil edin!");
+
+            if (registerDto.Password.Length < 5 || registerDto.Password.Length > 8)
+                throw new InvalidOperationException("Parolun uzunluğu 5-8 simvol arasında olmalıdır!");
+
+            if (!registerDto.Password.Any(char.IsUpper))
+                throw new InvalidOperationException("Parol ən az bir böyük hərf içərməlidir!");
+
+            if (!registerDto.Password.Any(char.IsLower))
+                throw new InvalidOperationException("Parol ən az bir kiçik hərf içərməlidir!");
 
             var balance = new Balance
             {
@@ -152,9 +216,9 @@ namespace PaymentWebService.Services.Concrete
 
             var user = new User
             {
-                Email = registerDto.Email,
                 PhoneNumber = registerDto.PhoneNumber,
                 Password = registerDto.Password,
+                RepeatPassword = registerDto.RepeatPassword,
                 BalanceId = balance.Id,
                 CreateDate = DateTime.UtcNow
             };
@@ -164,23 +228,22 @@ namespace PaymentWebService.Services.Concrete
             return new AuthResponseDto
             {
                 Token = _tokenService.GenerateToken(user),
-                Email = user.Email
+                PhoneNumber = user.PhoneNumber
             };
         }
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == loginDto.PhoneNumber);
             if (user == null)
-                throw new KeyNotFoundException("User not found.");
+                throw new KeyNotFoundException("Istifadeci movcud deyil.");
             if (user.Password != loginDto.Password)
-                throw new KeyNotFoundException("User not found.");
-            // Şifrələmə yoxlama əlavə edilə bilər.
-
+                throw new KeyNotFoundException("Parolu duzgun daxil edin.");
+        
             return new AuthResponseDto
             {
                 Token = _tokenService.GenerateToken(user),
-                Email = user.Email
+                PhoneNumber = user.PhoneNumber
             };
         }
     }
