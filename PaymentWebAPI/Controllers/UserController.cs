@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PaymentWebEntity.DTOs;
 using PaymentWebService.Services.Abstraction;
 
@@ -36,20 +38,42 @@ namespace PaymentWebAPI.Controllers
 
             return Ok(userDetails);
         }
-
-        //[HttpPost("add (Only Admin)")]
-        //public async Task<IActionResult> AddUserAsync([FromBody] UserCreateDto user)
-        //{
-        //        await _userService.AddUserAsync(user);
-        //        return Ok(user);
-        //}
-
-        [HttpPost("Delete")]
-        public async Task<IActionResult> DeleteUserAsync(int id)
+        // [Authorize]
+        [HttpDelete("delete-account")]
+        public async Task<IActionResult> DeleteAccount()
         {
-            await _userService.DeleteUserAsync(id);
-            return Ok(id);
+            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            // var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+            if (string.IsNullOrEmpty(token))
+                return Unauthorized("Token təmin edilməyib.");
+
+            try
+            {
+                await _userService.DeleteAccountAsync(token);
+                return Ok("Hesab uğurla silindi.");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
         }
+        
+        // [Authorize]
+        // [HttpDelete("delete")]
+        // public async Task<IActionResult> DeleteUserAsync()
+        // {
+        //     var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        //     if (string.IsNullOrEmpty(userId)) 
+        //         return Unauthorized("User not found");
+        //
+        //     await _userService.DeleteUserAsync(userId);
+        //     return Ok("User deleted successfully");
+        // }
+
 
 
         [HttpPut("Update")]

@@ -34,13 +34,15 @@ namespace PaymentWebService.Authentication
                     {
                         OnMessageReceived = context =>
                         {
-                            if (context.Request.Headers.ContainsKey("Authorization"))
+                            var token = context.Request.Headers["Bearer "].ToString();
+                            if (!string.IsNullOrEmpty(token))
                             {
-                                context.Token = context.Request.Headers["Authorization"];
+                                context.Token = token.Trim();
                             }
                             return Task.CompletedTask;
                         }
                     };
+
 
                 });
 

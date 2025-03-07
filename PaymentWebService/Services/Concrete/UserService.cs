@@ -76,11 +76,33 @@ namespace PaymentWebService.Services.Concrete
             await _context.SaveChangesAsync();  
         }
 
-        public async Task DeleteUserAsync(int? Id)
+        // public async Task DeleteUserAsync(int? Id)
+        // {
+        //     if (!Id.HasValue) throw new ArgumentNullException(nameof(Id));
+        //     var user = await _context.Users.FindAsync(Id.Value);
+        //     if (user == null) throw new ArgumentNullException(nameof(user));
+        //     _context.Users.Remove(user);
+        //     await _context.SaveChangesAsync();
+        // }
+        public async Task DeleteAccountAsync(string token)
         {
-            if (!Id.HasValue) throw new ArgumentNullException(nameof(Id));
-            var user = await _context.Users.FindAsync(Id.Value);
-            if (user == null) throw new ArgumentNullException(nameof(user));
+            var userId = _tokenService.GetUserIdFromToken(token);
+
+            if (string.IsNullOrEmpty(userId))
+                throw new UnauthorizedAccessException("Yanlış token.");
+            // var user = await _context.Users
+            //     .Where(u => u.Id.Equals(userId)).FirstOrDefaultAsync();
+            if (!int.TryParse(userId, out int userIdInt))
+                throw new UnauthorizedAccessException("Yanlış token.");
+
+            var user = await _context.Users
+                .Where(u => u.Id == userIdInt) // Tip uyğunluğu təmin olundu
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+                throw new KeyNotFoundException("İstifadəçi mövcud deyil.");
+
+            // Hesabı silirik
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
         }
@@ -225,11 +247,7 @@ namespace PaymentWebService.Services.Concrete
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
 
-            return new AuthResponseDto
-            {
-                Token = _tokenService.GenerateToken(user),
-                PhoneNumber = user.PhoneNumber
-            };
+            return new AuthResponseDto();
         }
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
@@ -243,7 +261,7 @@ namespace PaymentWebService.Services.Concrete
             return new AuthResponseDto
             {
                 Token = _tokenService.GenerateToken(user),
-                PhoneNumber = user.PhoneNumber
+                PhoneNumber = user.PhoneNumber,
             };
         }
     }

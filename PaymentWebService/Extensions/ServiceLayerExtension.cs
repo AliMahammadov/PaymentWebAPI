@@ -9,8 +9,8 @@ namespace PaymentWebService.Extensions
         public static IServiceCollection LoadServiceLayerExtension(this IServiceCollection services)
         {
             services.AddScoped<IUserService, UserService>();
-            //services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IBalanceServices, BalanceService>();
+            services.AddScoped<IPaymetServices, PaymentService>();
             services.AddScoped<TokenService>();
 
 

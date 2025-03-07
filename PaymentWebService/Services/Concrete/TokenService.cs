@@ -11,10 +11,12 @@ namespace PaymentWebService.Services.Concrete
     public class TokenService : ITokenService
     {
         private readonly IConfiguration _configuration;
+        private readonly string _secretKey = "SecretKey";
 
         public TokenService(IConfiguration configuration)
         {
             _configuration = configuration;
+            _secretKey = _configuration.GetSection("Jwt")["Key"]; // Konfiqurasiyadan oxu
         }
 
         public string GenerateToken(User user)
@@ -40,6 +42,29 @@ namespace PaymentWebService.Services.Concrete
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-    
+
+        public string GetUserIdFromToken(string token)
+        {
+            var principal = GetPrincipalFromExpiredToken(token); // JWT tokenini doğrulama
+            var userId = principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Tokenin içindən istifadəçi ID-sini əldə edirik
+
+            return userId;
+        }
+
+        public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_secretKey);
+            var parameters = new TokenValidationParameters
+            {
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateLifetime = false, // Tokenin müddətini yoxlamaq istəmirik
+                IssuerSigningKey = new SymmetricSecurityKey(key)
+            };
+
+            var principal = tokenHandler.ValidateToken(token, parameters, out _);
+            return principal;
+        }
     }
 }

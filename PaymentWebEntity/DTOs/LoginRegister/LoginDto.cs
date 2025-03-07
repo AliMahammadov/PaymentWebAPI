@@ -24,5 +24,7 @@ namespace PaymentWebEntity.DTOs.LoginRegister
     {
         public string Token { get; set; }
         public string PhoneNumber { get; set; }
+        
+
     }
 }

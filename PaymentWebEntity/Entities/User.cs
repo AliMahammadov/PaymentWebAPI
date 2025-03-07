@@ -7,7 +7,7 @@ namespace PaymentWebEntity.Entities
 {
     public class User : BaseEntity
     {
-      
+
         [MaxLength(20)]
         public string? FullName { get; set; }
 

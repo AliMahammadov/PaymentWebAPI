@@ -21,14 +21,15 @@ namespace PaymentWebAPI.Controllers
         public async Task<IActionResult> Register(RegisterDto registerDto)
         {
             var result = await _userService.RegisterAsync(registerDto);
-            return Ok(result);
+            return Ok("Qeydiyyat ugurla tamamlandi !!");
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto loginDto)
         {
             var result = await _userService.LoginAsync(loginDto);
-            return Ok(result);
+            return Ok (result);
+            
         }
     }
 }

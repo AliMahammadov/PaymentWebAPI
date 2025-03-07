@@ -19,17 +19,13 @@ builder.Services.AddSwaggerGen(c =>
 
     var securityScheme = new OpenApiSecurityScheme
     {
-        Name = "Authorization",
+        Name = "Bearer ",
         Description = "JWT Token daxil edin. Nümunə: YOUR_TOKEN_HERE",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey
     };
 
-    c.AddSecurityDefinition("Bearer", securityScheme);
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        { securityScheme, new string[] { } }
-    });
+    c.AddSecurityDefinition("Bearer ", securityScheme);
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         { securityScheme, Array.Empty<string>() }

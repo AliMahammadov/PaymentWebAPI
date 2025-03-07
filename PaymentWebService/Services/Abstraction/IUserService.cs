@@ -11,7 +11,9 @@ namespace PaymentWebService.Services.Abstraction
 
         Task AddUserAsync(UserCreateDto userDto);
 
-        Task DeleteUserAsync(int? Id);
+        // Task DeleteUserAsync(int? Id);
+        Task DeleteAccountAsync(string token);
+
         
         Task UpdateUserByIdAsync(int? id,UserUpdateDto user);
 
