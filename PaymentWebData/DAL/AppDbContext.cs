@@ -29,6 +29,15 @@ namespace PaymentWebData.DAL
                 .WithMany(u => u.Payments) 
                 .HasForeignKey(p => p.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+            
+            builder.Entity<Payment>()
+                .Property(p => p.Amount)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+
+            builder.Entity<Payment>()
+                .Property(p => p.CreateDate)
+                .HasDefaultValueSql("GETUTCDATE()");
 
             base.OnModelCreating(builder);
         }
