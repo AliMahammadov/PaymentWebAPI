@@ -24,8 +24,8 @@ namespace PaymentWebService.Authentication
                         ValidateIssuer = true,
                         ValidateAudience = true,
                         ValidateLifetime = true,
-                        ValidIssuer = issuer,
-                        ValidAudience = issuer,
+                        ValidIssuer = "http://localhost:5000",
+                        ValidAudience = "http://localhost:5000",
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
                         ClockSkew = TimeSpan.Zero
                     };

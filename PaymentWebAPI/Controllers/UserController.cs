@@ -6,7 +6,7 @@ using PaymentWebService.Services.Abstraction;
 
 namespace PaymentWebAPI.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
@@ -19,31 +19,41 @@ namespace PaymentWebAPI.Controllers
         }
 
 
-        [HttpGet("get-all")]
-        public IActionResult GetAllUsers()
+        // [HttpGet("get-all")]
+        // public IActionResult GetAllUsers()
+        // {
+        //     var users = _userService.GetAll();
+        //     return Ok(users);
+        // }
+        
+        [HttpGet("Details")]
+        public async Task<ActionResult<UserDto>> GetUserDetails()
         {
-            var users = _userService.GetAll();
-            return Ok(users);
-        }
+            // Token-dən istifadəçi ID-sini tap
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("sub") ?? User.FindFirst("userId");
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<UserDetailsDto>> GetUserDetails(int id)
-        {
-            var userDetails = await _userService.GetUserByIdAsync(id);
+            if (userIdClaim == null || string.IsNullOrEmpty(userIdClaim.Value))
+                return Unauthorized("Token düzgün daxil edilməyib və ya istifadəçi ID-si tapılmadı.");
+
+            // ID-ni int formatına çevirməyə çalış
+            if (!int.TryParse(userIdClaim.Value, out int userId))
+                return BadRequest("Token içindəki istifadəçi ID-si düzgün formatda deyil.");
+
+            // İstifadəçini servisdən al
+            var userDetails = await _userService.GetUserByIdAsync(userId);
 
             if (userDetails == null)
-            {
-                return NotFound("User not found");
-            }
+                return NotFound("İstifadəçi mövcud deyil.");
 
             return Ok(userDetails);
         }
-        [Authorize]
-        [HttpDelete("delete-account")]
+
+        
+        [HttpDelete("Delete")]
         public async Task<IActionResult> DeleteAccount()
         {
+            
             var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            // var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
             if (string.IsNullOrEmpty(token))
                 return Unauthorized("Token təmin edilməyib.");
 
@@ -61,29 +71,22 @@ namespace PaymentWebAPI.Controllers
                 return Unauthorized(ex.Message);
             }
         }
-        
-        // [Authorize]
-        // [HttpDelete("delete")]
-        // public async Task<IActionResult> DeleteUserAsync()
-        // {
-        //     var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        //     if (string.IsNullOrEmpty(userId)) 
-        //         return Unauthorized("User not found");
-        //
-        //     await _userService.DeleteUserAsync(userId);
-        //     return Ok("User deleted successfully");
-        // }
-
-
 
         [HttpPut("Update")]
-        public async Task<IActionResult> UpdateUserById(int id, [FromBody] UserUpdateDto user)
+        public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDto user)
         {
-            await _userService.UpdateUserByIdAsync(id, user);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            return Ok(id);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Token etibarsızdır.");
+            }
 
+            await _userService.UpdateUserByIdAsync(int.Parse(userId), user);
+
+            return Ok("İstifadəçi uğurla yeniləndi.");
         }
+
 
     }
 }

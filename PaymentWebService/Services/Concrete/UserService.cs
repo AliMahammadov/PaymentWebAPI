@@ -20,34 +20,33 @@ namespace PaymentWebService.Services.Concrete
 
         public async Task<UserDto> GetUserByIdAsync(int? Id)
         {
+            if (Id == null) return null;
+
             var user = await _context.Users
-               .Where(u => u.Id == Id)
-               .Include(u => u.Balance)
-               .Include(u => u.Payments)
-               .FirstOrDefaultAsync();
+                .Where(u => u.Id == Id)
+                .Include(u => u.Balance)
+                .Include(u => u.Payments)
+                .FirstOrDefaultAsync();
 
             if (user == null) return null;
-            var userDetails = new UserDto
+
+            return new UserDto
             {
                 FullName = user.FullName,
                 Email = user.Email,
                 CreateDate = user.CreateDate,
                 UpdateDate = user.UpdateDate,
-                Balance = new BalanceDto
+                Balance = user.Balance != null ? new BalanceDto
                 {
                     TotalBalance = user.Balance.TotalBalance,
-                    AvailableBalance = user.Balance.AvailableBalance,
-                    
-                },
-
-                Payments = user.Payments.Select(p => new PaymentDto
+                    AvailableBalance = user.Balance.AvailableBalance
+                } : null,
+                Payments = user.Payments?.Select(p => new PaymentDto
                 {
                     Amount = p.Amount,
                     CreateDate = p.CreateDate
                 }).ToList()
-
             };
-            return userDetails;
         }
 
         public async Task AddUserAsync(UserCreateDto userDto)
@@ -76,31 +75,18 @@ namespace PaymentWebService.Services.Concrete
             await _context.SaveChangesAsync();  
         }
 
-        // public async Task DeleteUserAsync(int? Id)
-        // {
-        //     if (!Id.HasValue) throw new ArgumentNullException(nameof(Id));
-        //     var user = await _context.Users.FindAsync(Id.Value);
-        //     if (user == null) throw new ArgumentNullException(nameof(user));
-        //     _context.Users.Remove(user);
-        //     await _context.SaveChangesAsync();
-        // }
         public async Task DeleteAccountAsync(string token)
         {
             var userId = _tokenService.GetUserIdFromToken(token);
-
-            if (string.IsNullOrEmpty(userId))
-                throw new UnauthorizedAccessException("Yanlış token.");
-            // var user = await _context.Users
-            //     .Where(u => u.Id.Equals(userId)).FirstOrDefaultAsync();
-            if (!int.TryParse(userId, out int userIdInt))
-                throw new UnauthorizedAccessException("Yanlış token.");
+            
+            if (string.IsNullOrEmpty(userId))  throw new UnauthorizedAccessException("Yanlış token.");
+            if (!int.TryParse(userId, out int userIdInt))  throw new UnauthorizedAccessException("Yanlış token.");
 
             var user = await _context.Users
-                .Where(u => u.Id == userIdInt) // Tip uyğunluğu təmin olundu
+                .Where(u => u.Id == userIdInt) 
                 .FirstOrDefaultAsync();
 
-            if (user == null)
-                throw new KeyNotFoundException("İstifadəçi mövcud deyil.");
+            if (user == null)  throw new KeyNotFoundException("İstifadəçi mövcud deyil.");
 
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
@@ -108,12 +94,10 @@ namespace PaymentWebService.Services.Concrete
 
         public async Task UpdateUserByIdAsync(int? id, UserUpdateDto user)
         {
-            if (!id.HasValue)
-                throw new ArgumentNullException(nameof(id));
+            if (!id.HasValue) throw new ArgumentNullException(nameof(id));
 
             var existingUser = await _context.Users.FindAsync(id.Value);
-            if (existingUser == null)
-                throw new KeyNotFoundException("Istifadeci movcud deyil");
+            if (existingUser == null)  throw new KeyNotFoundException("Istifadeci movcud deyil");
 
             if (!string.IsNullOrWhiteSpace(user.PhoneNumber) && user.PhoneNumber != "string")
             {
@@ -139,17 +123,10 @@ namespace PaymentWebService.Services.Concrete
 
             if (!string.IsNullOrWhiteSpace(user.Password) && user.Password != "string")
             {
-                if (user.Password != user.RepeatPassword)
-                    throw new InvalidOperationException("Parolu düzgün daxil edin!");
-
-                if (user.Password.Length < 5 || user.Password.Length > 8)
-                    throw new InvalidOperationException("Parolun uzunluğu 5-8 simvol arasında olmalıdır!");
-
-                if (!user.Password.Any(char.IsUpper))
-                    throw new InvalidOperationException("Parol ən az bir böyük hərf içərməlidir!");
-
-                if (!user.Password.Any(char.IsLower))
-                    throw new InvalidOperationException("Parol ən az bir kiçik hərf içərməlidir!");
+                if (user.Password != user.RepeatPassword) throw new InvalidOperationException("Parolu düzgün daxil edin!");
+                if (user.Password.Length < 5 || user.Password.Length > 8) throw new InvalidOperationException("Parolun uzunluğu 5-8 simvol arasında olmalıdır!");
+                if (!user.Password.Any(char.IsUpper)) throw new InvalidOperationException("Parol ən az bir böyük hərf içərməlidir!");
+                if (!user.Password.Any(char.IsLower))  throw new InvalidOperationException("Parol ən az bir kiçik hərf içərməlidir!");
 
                 existingUser.Password = user.Password;
                 existingUser.RepeatPassword = user.RepeatPassword;
@@ -157,11 +134,8 @@ namespace PaymentWebService.Services.Concrete
 
             if (!string.IsNullOrWhiteSpace(user.FullName) && user.FullName != "string")
             {
-                if (user.FullName.Length < 3 || user.FullName.Length > 20)
-                    throw new InvalidOperationException("Adın uzunluğu 3-20 simvol arasında olmalıdır!");
-
-                if (user.FullName.Any(char.IsDigit))
-                    throw new InvalidOperationException("Ad daxilində rəqəm olmamalıdır!");
+                if (user.FullName.Length < 3 || user.FullName.Length > 20)   throw new InvalidOperationException("Adın uzunluğu 3-20 simvol arasında olmalıdır!");
+                if (user.FullName.Any(char.IsDigit))  throw new InvalidOperationException("Ad daxilində rəqəm olmamalıdır!");
 
                 var textInfo = System.Globalization.CultureInfo.CurrentCulture.TextInfo;
                 existingUser.FullName = textInfo.ToTitleCase(user.FullName.ToLower());
@@ -176,8 +150,8 @@ namespace PaymentWebService.Services.Concrete
         public IEnumerable<UserDto> GetAll()
 {
     var users = _context.Set<User>()
-                  .Include(u => u.Balance)  // Balance əlaqəsini yüklə
-                  .Include(u => u.Payments) // Payment əlaqəsini yüklə
+                  .Include(u => u.Balance) 
+                  .Include(u => u.Payments) 
                   .ToList();
 
     var formattedData = users.Select(user => new UserDto
@@ -252,10 +226,8 @@ namespace PaymentWebService.Services.Concrete
         public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == loginDto.PhoneNumber);
-            if (user == null)
-                throw new KeyNotFoundException("Istifadeci movcud deyil.");
-            if (user.Password != loginDto.Password)
-                throw new KeyNotFoundException("Parolu duzgun daxil edin.");
+            if (user == null)  throw new KeyNotFoundException("Istifadeci movcud deyil.");
+            if (user.Password != loginDto.Password)  throw new KeyNotFoundException("Parolu duzgun daxil edin.");
         
             return new AuthResponseDto
             {

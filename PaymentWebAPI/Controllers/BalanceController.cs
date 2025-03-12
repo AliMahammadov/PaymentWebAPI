@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PaymentWebEntity.DTOs;
 using PaymentWebService.Services.Abstraction;
@@ -6,7 +8,7 @@ using PaymentWebService.Services.Concrete;
 
 namespace PaymentWebAPI.Controllers
 {
-
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class BalanceController : ControllerBase
@@ -17,13 +19,16 @@ namespace PaymentWebAPI.Controllers
         {
             _balanceServices = balanceServices;
         }
-        [HttpPost("add")]
-        public async Task<IActionResult> AddBalance(int userId, decimal amount)
+        [HttpPost("Add")]
+        public async Task<IActionResult> AddBalance(decimal amount)
         {
             try
             {
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                  ?? throw new UnauthorizedAccessException("Token dogru deyil"));
+                
                 await _balanceServices.AddBalanceAsync(userId, amount);
-                return Ok(new { Message = "Balance added successfully" });
+                return Ok(new { Message = "Balans ugurla artirildi !!" });
             }
             catch (Exception ex)
             {

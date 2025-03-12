@@ -2,6 +2,6 @@ namespace PaymentWebService.Services.Abstraction;
 
 public interface IPaymetServices
 {
-        Task<bool> TransferBalanceAsync(string senderPhoneNumber, string receiverPhoneNumber, decimal amount);
+        Task<bool> TransferBalanceAsync(int senderId, string receiverPhoneNumber, decimal amount);
     
 }

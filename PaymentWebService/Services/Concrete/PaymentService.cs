@@ -14,26 +14,24 @@ public class PaymentService : IPaymetServices
         _context = context?? throw new ArgumentNullException(nameof(context));
     }
 
-    public async Task<bool> TransferBalanceAsync(string senderPhoneNumber, string receiverPhoneNumber, decimal amount)
+    public async Task<bool> TransferBalanceAsync(int senderId, string receiverPhoneNumber, decimal amount)
     {
-        var sender = await _context.Users
-            .Include(u=>u.Balance)
-            .FirstOrDefaultAsync(u => u.PhoneNumber == senderPhoneNumber);
-            
-        var receiver = await _context.Users
-            .Include(u => u.Balance)
-            .FirstOrDefaultAsync(u => u.PhoneNumber == receiverPhoneNumber);
+        var sender = await _context.Users.Include(u=>u.Balance).FirstOrDefaultAsync(u=>u.Id == senderId);
+        if (sender == null || amount<0 || amount== 0) throw new InvalidOperationException("Meblegi duzgun daxil edin");
+        if (amount > sender.Balance.AvailableBalance)  throw new InvalidOperationException("Balansinizda kifayet qeder vesait yoxdur");
+           
+        var receiver = await _context.Users.Include(u=>u.Balance).FirstOrDefaultAsync(u=> u.PhoneNumber == receiverPhoneNumber);
+        if (receiver == null) throw new KeyNotFoundException("Bu nomrede istifadeci movcud deyil");
+       
         var payment = new Payment
         {
             Amount = amount,
             UserId = sender.Id, 
-            User = sender
+            User = sender,
+            CreateDate = DateTime.Now,
         };
         await _context.Payments.AddAsync(payment);
-        if (sender == null || receiver == null || sender.Balance.AvailableBalance < amount)
-        {
-            return false;
-        }
+       
         sender.Balance.TotalBalance -= amount;
         sender.Balance.AvailableBalance -= amount;
         
