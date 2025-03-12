@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PaymentWebData.DAL;
+using PaymentWebEntity.Entities;
 using PaymentWebService.Services.Abstraction;
 
 namespace PaymentWebService.Services.Concrete;
@@ -22,7 +23,13 @@ public class PaymentService : IPaymetServices
         var receiver = await _context.Users
             .Include(u => u.Balance)
             .FirstOrDefaultAsync(u => u.PhoneNumber == receiverPhoneNumber);
-        
+        var payment = new Payment
+        {
+            Amount = amount,
+            UserId = sender.Id, 
+            User = sender
+        };
+        await _context.Payments.AddAsync(payment);
         if (sender == null || receiver == null || sender.Balance.AvailableBalance < amount)
         {
             return false;
