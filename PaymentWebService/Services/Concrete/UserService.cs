@@ -102,7 +102,6 @@ namespace PaymentWebService.Services.Concrete
             if (user == null)
                 throw new KeyNotFoundException("İstifadəçi mövcud deyil.");
 
-            // Hesabı silirik
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
         }

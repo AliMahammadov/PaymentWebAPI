@@ -19,9 +19,9 @@ namespace PaymentWebApi.Controllers
         {
             var result = await _paymentService.TransferBalanceAsync(senderPhoneNumber, receiverPhoneNumber, amount);
             if (!result)
-                return BadRequest("Transaction failed. Check balance or phone numbers.");
+                return BadRequest("Balansinizda kifayet qeder .");
 
-            return Ok("Transaction successful.");
+            return Ok("Kocurulme ugurla tamamlandi");
         }
     }
 }

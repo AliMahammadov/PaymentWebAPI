@@ -38,7 +38,7 @@ namespace PaymentWebAPI.Controllers
 
             return Ok(userDetails);
         }
-        // [Authorize]
+        [Authorize]
         [HttpDelete("delete-account")]
         public async Task<IActionResult> DeleteAccount()
         {
